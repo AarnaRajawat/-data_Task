@@ -1,0 +1,30 @@
+{
+  "name": "dareai-data-explorer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DareAI Data Explorer - Fast, race-condition safe support ticket explorer with 25,000+ records",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "build": "npm --prefix server run build && npm --prefix client run build",
+    "test": "npm --prefix server run test && npm --prefix client run test",
+    "test:client": "npm --prefix client run test",
+    "test:server": "npm --prefix server run test",
+    "test:e2e": "npm --prefix client run test:e2e"
+  },
+  "keywords": [
+    "react",
+    "typescript",
+    "tanstack-query",
+    "tanstack-virtual",
+    "express",
+    "vite",
+    "accessibility"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}
