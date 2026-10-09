@@ -101,4 +101,52 @@ describe('Ticket API Endpoints', () => {
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('ValidationError');
   });
+
+  describe('Network Simulation & Reliability Behavior', () => {
+    it('GET /api/tickets returns 200 OK during normal browsing without simulation headers', async () => {
+      const res = await request(app).get('/api/tickets?limit=10&page=1&sort=newest');
+      expect(res.status).toBe(200);
+      expect(res.body.data).toBeInstanceOf(Array);
+      expect(res.body.data.length).toBe(10);
+    });
+
+    it('GET /api/tickets returns 500 SimulatedInternalServerError when x-simulate-failure header is sent', async () => {
+      const res = await request(app)
+        .get('/api/tickets')
+        .set('x-simulate-failure', 'true');
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('SimulatedInternalServerError');
+      expect(res.body.message).toContain('simulated server network/database error');
+    });
+
+    it('GET /api/tickets returns 500 SimulatedInternalServerError when simulate_error=true query param is passed', async () => {
+      const res = await request(app).get('/api/tickets?simulate_error=true');
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toBe('SimulatedInternalServerError');
+      expect(res.body.message).toContain('simulated server network/database error');
+    });
+
+    it('GET /api/tickets triggers simulation with failure rate when x-simulate is enabled', async () => {
+      const resFail = await request(app)
+        .get('/api/tickets')
+        .set('x-simulate', 'true')
+        .set('x-failure-rate', '1')
+        .set('x-delay-ms', '1');
+
+      expect(resFail.status).toBe(500);
+      expect(resFail.body.error).toBe('SimulatedInternalServerError');
+
+      const resSuccess = await request(app)
+        .get('/api/tickets')
+        .set('x-simulate', 'true')
+        .set('x-failure-rate', '0')
+        .set('x-delay-ms', '1');
+
+      expect(resSuccess.status).toBe(200);
+      expect(resSuccess.body.data).toBeInstanceOf(Array);
+    });
+  });
 });
+

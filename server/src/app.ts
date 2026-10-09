@@ -13,12 +13,53 @@ export function createApp() {
   // CORS Configuration - allow local Vite dev server and deployed frontend
   app.use(
     cors({
-      origin: true, // Reflect request origin or specific configured origins
+      origin: (origin, callback) => {
+        // Allow requests with no origin (e.g. mobile apps, curl, server-to-server, health checks)
+        if (!origin) return callback(null, true);
+
+        const allowedOrigins = [
+          'https://taskda.netlify.app',
+          'http://localhost:5173',
+          'http://localhost:4173',
+          'http://localhost:3000',
+          'http://localhost:5000',
+          'http://127.0.0.1:5173',
+        ];
+
+        if (
+          allowedOrigins.includes(origin) ||
+          origin.endsWith('.netlify.app') ||
+          origin.includes('localhost') ||
+          origin.includes('127.0.0.1') ||
+          (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL)
+        ) {
+          return callback(null, true);
+        }
+
+        // Allow all other origins with origin reflection
+        return callback(null, true);
+      },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'x-disable-simulation'],
+      allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'x-disable-simulation',
+        'x-simulate',
+        'x-simulate-failure',
+        'x-simulate-error',
+        'x-simulate-latency',
+        'x-force-failure',
+        'x-failure-rate',
+        'x-delay-ms',
+        'x-min-delay-ms',
+        'x-max-delay-ms',
+        'Accept',
+      ],
     })
   );
+
+  app.options('*', cors()); // Handle preflight across all routes
 
   app.use(express.json());
 
